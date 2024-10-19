@@ -21,6 +21,7 @@ router.get("/home", ensureAuthenticated, async (req, res) => {
                 cssFile: "dashboard.css",
                 user: req.user,
                 E:e,
+                eventLength:e.length,
             });
         
     } catch (error) {
