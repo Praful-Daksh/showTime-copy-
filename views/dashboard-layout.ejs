@@ -19,7 +19,22 @@
     />
   </head>
   <body>
-
+    <div class="d-flex" id="wrapper">
+      <div class="bg-dark border-right" id="sidebar-wrapper">
+          <div class="sidebar-heading text-white">Event Dashboard</div>
+          <div class="list-group list-group-flush">
+              <a href="/dashboard/home" class="list-group-item list-group-item-action bg-dark text-white"><i
+                      class="fas fa-tachometer-alt"></i> Dashboard</a>
+              <a href="/dashboard/AllEvents" class="list-group-item list-group-item-action bg-dark text-white"><i
+                      class="fas fa-calendar-alt"></i> All Events</a>
+              <a href="#" class="list-group-item list-group-item-action bg-dark text-white"><i
+                      class="fas fa-chart-line"></i> Analytics</a>
+              <a href="#" class="list-group-item list-group-item-action bg-dark text-white"><i
+                      class="fas fa-envelope"></i> Marketing</a>
+              <a href="#" class="list-group-item list-group-item-action bg-dark text-white"><i class="fas fa-cogs"></i>
+                  Settings</a>
+          </div>
+      </div>
     <%- body %>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
