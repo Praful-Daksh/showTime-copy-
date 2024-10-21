@@ -17,6 +17,9 @@ const EventSchema = new mongoose.Schema({
     },
     venue:{
         type:String
+    },
+    access:{
+        type:String,
     }
 });
 const Event = mongoose.model('event',EventSchema);

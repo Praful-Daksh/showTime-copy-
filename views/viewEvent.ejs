@@ -7,9 +7,11 @@
             <%= E.title %>
         </h1>
     </nav>
-    <div class="container mt-5">
+    <div class="container mt-5 ">
+        <a class="fas fa-trash-alt mb-2 btn btn-danger" style="cursor: pointer;" id="deletE" href="/dashboard/AllEvents/delete/<%= E._id %>"></a>
         <p>Event City: <%= E.city %></p>
         <p>Event Venue: <%= E.venue %></p>
         <p>Event Date: <%= E.date.toDateString() %></p>
     </div>
+    
 </div>

@@ -83,14 +83,26 @@ router.get('/AllEvents/:id', ensureAuthenticated, async (req, res) => {
         if (err) {
             console.log(error);
             res.send("Internal Server Error , 502");
-            res.render('/dashboard/AllEvents');
+            res.render('AllEvents');
         }
     }
 });
 
-router.get("/settings", ensureAuthenticated, (req, res) => {
-    res.render("dash-settings", { layout: "dashboard-layout.ejs" });
+// route for logout 
+router.get("/logOut", ensureAuthenticated, (req, res) => {
+    req.logout((err) => {
+        if (err) {
+          return res.status(500).send(err);
+        }
+        req.session.destroy((err) => {
+          if (err) {
+            return res.status(500).send(err);
+          }
+          res.render("/dashboard/", { layout: "layout.ejs" , cssFile:"home.css", title:'ShowTime-HOME'});
+        });
+      });
 });
+
 //new Event for user
 router.get("/newEvent", ensureAuthenticated, (req, res) => {
     res.render("new-Event", {
@@ -102,9 +114,10 @@ router.get("/newEvent", ensureAuthenticated, (req, res) => {
 });
 
 // post requrest for new Event
+
 router.post("/newEvent", async (req, res) => {
     try {
-        const { title, date, city, venue } = req.body;
+        const { title, date, city, venue,access} = req.body;
         const user = req.user._id;
         const newEvent = new Event({
             title,
@@ -112,14 +125,22 @@ router.post("/newEvent", async (req, res) => {
             user,
             city,
             venue,
+            access,
         });
         await newEvent.save();
         res.redirect("/dashboard/AllEvents");
-        console.log("New Event Created", newEvent);
     } catch (error) {
         console.log("error in creating event", error);
         res.status(500).send("server Errro");
     }
 });
 
+// deleting event
+
+router.get('/allEvents/delete/:id',ensureAuthenticated,async (req,res)=>{
+    const event = req.params.id;
+    await Event.deleteOne({_id:event});
+    req.flash('success_msg','Event Deleted Successfully');
+    res.redirect('/dashboard/AllEvents');
+});
 export default router;
