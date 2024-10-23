@@ -20,6 +20,10 @@ const EventSchema = new mongoose.Schema({
     },
     access:{
         type:String,
+    },
+    publist:{
+        type:Boolean,
+        default:false,
     }
 });
 const Event = mongoose.model('event',EventSchema);

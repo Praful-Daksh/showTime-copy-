@@ -20,6 +20,7 @@
                         <div class="card custom-card">
                             <div class="card-body">
                                 <h5 class="card-title"><%= event.title %></h5>
+                                <p class="card-text"><%= event.access %></p>
                                 <p class="card-text"><%= event.date.toDateString() %></p>
                                 <p class="card-text"><%= event.venue %></p>
                                 <button class="btn btn-info"><a href="/dashboard/AllEvents/<%= event._id %>">View</a></button>

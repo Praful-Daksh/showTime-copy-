@@ -103,6 +103,14 @@ router.get("/logOut", ensureAuthenticated, (req, res) => {
       });
 });
 
+// deleting event
+router.get('/allEvents/delete/:id',ensureAuthenticated,async (req,res)=>{
+    const event = req.params.id;
+    await Event.deleteOne({_id:event});
+    req.flash('success_msg','Event Deleted Successfully');
+    res.redirect('/dashboard/AllEvents');
+});
+
 //new Event for user
 router.get("/newEvent", ensureAuthenticated, (req, res) => {
     res.render("new-Event", {
@@ -135,12 +143,52 @@ router.post("/newEvent", async (req, res) => {
     }
 });
 
-// deleting event
 
-router.get('/allEvents/delete/:id',ensureAuthenticated,async (req,res)=>{
-    const event = req.params.id;
-    await Event.deleteOne({_id:event});
-    req.flash('success_msg','Event Deleted Successfully');
-    res.redirect('/dashboard/AllEvents');
+//route for marketing page
+
+router.get('/marketing',ensureAuthenticated,async(req,res)=>{
+    try {
+        let e = [];
+        await Event.find({ access:'Public' })
+            .then(events => {
+                e = events;
+            })
+            .catch(err => {
+                console.error('Error fetching events:', err);
+            });
+        res.render("dash-marketing", {
+            layout: "dashboard-layout.ejs",
+            cssFile: "dashboard.css",
+            E: e,
+        });
+
+    } catch (error) {
+        if (error) {
+            console.log(error);
+            res.send("Internal Server Error , 502");
+        }
+    }
 });
+
+//route for ticket form in market section
+
+router.get('/marketing/:id',(req,res)=>{
+    const eventId = req.params.id;
+        res.render("ticketForm", {
+            layout: "layout.ejs",
+            cssFile: "newEvent.css",
+            title: "Publish your Event",
+            eventId:eventId,
+        });
+    });
+
+//router for publishing ticket in market section
+
+router.post('/marketing',(req,res)=>{
+    const {Limit,Price,Validity,eventId} = req.body;
+    console.log(Limit," ",Price," ",Validity," ",eventId); 
+    res.redirect('/dashboard/marketing');
+})
+
+
 export default router;
