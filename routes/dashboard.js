@@ -1,4 +1,6 @@
 import Event from "../models/events.js";
+import Ticket from "../models/tickets.js";
+import Tasks from "../models/tasks.js";
 import express from "express";
 import { ensureAuthenticated } from "../config/auth.js";
 
@@ -68,11 +70,13 @@ router.get('/AllEvents/:id', ensureAuthenticated, async (req, res) => {
     try {
         const eventId = req.params.id;
         await Event.findById(eventId)
-            .then(event => {
+            .then(async event => {
+                const allTasks = await fetchTasks(eventId);
                 res.render('viewEvent', {
                     layout: "dashboard-layout.ejs",
                     cssFile: "dashboard.css",
                     E: event,
+                    T:allTasks,
                 });
             })
             .catch(er => {
@@ -92,22 +96,22 @@ router.get('/AllEvents/:id', ensureAuthenticated, async (req, res) => {
 router.get("/logOut", ensureAuthenticated, (req, res) => {
     req.logout((err) => {
         if (err) {
-          return res.status(500).send(err);
+            return res.status(500).send(err);
         }
         req.session.destroy((err) => {
-          if (err) {
-            return res.status(500).send(err);
-          }
-          res.render("/dashboard/", { layout: "layout.ejs" , cssFile:"home.css", title:'ShowTime-HOME'});
+            if (err) {
+                return res.status(500).send(err);
+            }
+            res.render("/dashboard/", { layout: "layout.ejs", cssFile: "home.css", title: 'ShowTime-HOME' });
         });
-      });
+    });
 });
 
 // deleting event
-router.get('/allEvents/delete/:id',ensureAuthenticated,async (req,res)=>{
+router.get('/allEvents/delete/:id', ensureAuthenticated, async (req, res) => {
     const event = req.params.id;
-    await Event.deleteOne({_id:event});
-    req.flash('success_msg','Event Deleted Successfully');
+    await Event.deleteOne({ _id: event });
+    req.flash('success_msg', 'Event Deleted Successfully');
     res.redirect('/dashboard/AllEvents');
 });
 
@@ -123,9 +127,9 @@ router.get("/newEvent", ensureAuthenticated, (req, res) => {
 
 // post requrest for new Event
 
-router.post("/newEvent", async (req, res) => {
+router.post("/newEvent",ensureAuthenticated, async (req, res) => {
     try {
-        const { title, date, city, venue,access} = req.body;
+        const { title, date, city, venue, access } = req.body;
         const user = req.user._id;
         const newEvent = new Event({
             title,
@@ -146,10 +150,10 @@ router.post("/newEvent", async (req, res) => {
 
 //route for marketing page
 
-router.get('/marketing',ensureAuthenticated,async(req,res)=>{
+router.get('/marketing', ensureAuthenticated, async (req, res) => {
     try {
         let e = [];
-        await Event.find({ access:'Public' })
+        await Event.find({ access: 'Public' })
             .then(events => {
                 e = events;
             })
@@ -172,23 +176,79 @@ router.get('/marketing',ensureAuthenticated,async(req,res)=>{
 
 //route for ticket form in market section
 
-router.get('/marketing/:id',(req,res)=>{
+router.get('/marketing/:id',ensureAuthenticated, (req, res) => {
     const eventId = req.params.id;
-        res.render("ticketForm", {
-            layout: "layout.ejs",
-            cssFile: "newEvent.css",
-            title: "Publish your Event",
-            eventId:eventId,
-        });
+    res.render("ticketForm", {
+        layout: "layout.ejs",
+        cssFile: "newEvent.css",
+        title: "Publish your Event",
+        eventId: eventId,
     });
+});
 
 //router for publishing ticket in market section
 
-router.post('/marketing',(req,res)=>{
-    const {Limit,Price,Validity,eventId} = req.body;
-    console.log(Limit," ",Price," ",Validity," ",eventId); 
-    res.redirect('/dashboard/marketing');
-})
+router.post('/marketing',ensureAuthenticated,async (req, res) => {
+    const { Limit, Price, Validity, eventId } = req.body;
+    try {
+        const newTicket = new Ticket({
+            limit: Limit,
+            price: Price,
+            validity: Validity,
+            eId: eventId,
+        });
+        await newTicket.save();
+        await Event.updateOne({_id:eventId},{$set:{publish:true}});
+        res.redirect('/dashboard/marketing');
+
+    }
+    catch(err) {
+        console.log(err);
+        res.status(500).send('Server Error');
+    }
+});
+
+//router for storing tasks in database
+
+router.post('/allEvents/task/:id',ensureAuthenticated, async (req,res)=>{
+        let eventID = req.params.id;
+        const todo = req.body.task;
+        console.log(todo," ",eventID);
+        try {
+            await Event.findById(eventID)
+                .then(async event => {
+                    const newTask = new Tasks({
+                        task:todo,
+                        eId:eventID
+                    });
+                    await newTask.save();
+                    console.log('task saved');
+                    res.redirect(`/dashboard/allEvents/${eventID}`);
+                })
+                .catch(er => {
+                    res.send("Event doesn't Exist Anymore");
+                })
+        }
+        catch (err) {
+            if (err) {
+                console.log(error);
+                res.send("Internal Server Error , 502");
+                res.render('AllEvents');
+            }
+        }
+});
+
+//function for fetching tasks 
+
+async function fetchTasks(eventid){
+    try{
+        const all =  await Tasks.find({eId:eventid});
+        return all || [];
+    }
+    catch(err){
+        return [];
+    }
+}
 
 
 export default router;

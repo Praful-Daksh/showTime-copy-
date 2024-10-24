@@ -3,10 +3,10 @@ import Event from './events.js';
 
 const TicketSchema = new mongoose.Schema({
     limit:{
-        type:number
+        type:Number
     },
     price:{
-        type:number
+        type:Number
     },
     validity:{
         type:Date

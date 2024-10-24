@@ -21,7 +21,7 @@ const EventSchema = new mongoose.Schema({
     access:{
         type:String,
     },
-    publist:{
+    publish:{
         type:Boolean,
         default:false,
     }
